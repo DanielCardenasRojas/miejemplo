@@ -1,6 +1,7 @@
 var {conexion, conexionProductos, conexionUsuarios} = require("./conexion")
 //var { conexionProductos, conexionUsuarios} = require("./conexion")
 var Usuario=require("../modelos/Usuario");
+const { generarPassword, validarPassword } = require("../middlewares/password");
 
 async function mostrarUsuarios(){
     var users=[];
@@ -39,6 +40,10 @@ async function buscarporID(id){
 }
 
 async function nuevoUsuario(datos){
+    var {salt, hash}=generarPassword(datos.password);
+    datos.password=hash;
+    datos.salt=salt;
+    datos.admin=false;
     var usuario=new Usuario(null, datos);
     var error=1;
     console.log(usuario.obtenerUsuario);
@@ -59,6 +64,15 @@ async function modificarUsuario(datos){
     var user=await buscarporID(datos.id);
     var error=1;
     if(user!=undefined){
+        if(datos.password==""){
+            datos.password=user.password;
+            datos.salt=user.salt;
+        }
+        else{
+            var {salt, hash}=generarPassword(datos.password);
+            datos.password=hash;
+            datos.salt=salt;
+        }
         var usuario=new Usuario(datos.id, datos);
         if(usuario.bandera==0){
             try{
@@ -93,10 +107,37 @@ async function borrarUsuario(id){
     return error;
 }
 
+
+async function login(datos){
+    var user=undefined;
+    var usuarioObjeto;
+    try{
+        var user=await conexionUsuarios.where('usuario', '==',datos.usuario).get();
+        if (user.docs.length==0){
+            return undefined;
+        }
+        usuarios.docs.filter((doc)=>{
+            var validar=validarPassword(datos.password,doc.data().password,doc.data().salt);
+            if (validar){
+                usuarioObjeto=new Usuario(doc.id,doc.data());
+                if (usuarioObjeto.bandera==0){
+                    user=usuarioObjeto.obtenerDatos;
+                }
+            }else
+            return undefined;
+        });
+    }
+    catch(err){
+        console.log("Error al obtener usuario"+err);
+    }
+    return user;
+}
+
 module.exports={
     mostrarUsuarios,
     buscarporID,
     nuevoUsuario,
     modificarUsuario,
-    borrarUsuario
+    borrarUsuario,
+    login
 }
