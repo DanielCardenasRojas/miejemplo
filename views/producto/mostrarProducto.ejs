@@ -1,0 +1,45 @@
+<%- include ("../templates/encabezado") %>
+<%- include ("../templates/menu") %>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1>Productos</h1>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Foto</th>
+                        <th>Editar / Borrar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                    productos.forEach((producto) => {
+                   %>
+                    <tr>
+                        <td><%= producto.id %></td>
+                        <td><%= producto.nombre %></td>
+                        <td><%= producto.descripcion %></td>
+                        <td><%= producto.precio %></td>
+                        <td><img src="/imagesProducto/<%=producto.foto%> " alt="" width='100px'></td>
+                        <td>
+                            <a href="/editarProducto/<%= producto.id %>">Editar</a>
+                            <a href="/borrarProducto/<%= producto.id %>">Borrar</a>
+                        </td>
+                    </tr>
+                    <%
+                    });
+                    %>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer"></div>
+    </div>
+</div>
+<%- include ("../templates/pie") %>
